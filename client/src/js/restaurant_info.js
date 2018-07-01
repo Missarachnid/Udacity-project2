@@ -92,10 +92,16 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
    */
 
   const picture = document.getElementById('restaurant-pic');
-  let origin  = DBHelper.imageUrlForRestaurant(restaurant);
-  console.log('origin in rest', origin);
-  let imageName = origin.replace('.jpg', '').replace('/img/', '');
-  let small = `/img/${imageName}-400.jpg`;
+
+  let num;
+  if(!restaurant.photgraph) {
+    num = restaurant.id;
+  } else {
+    num = restaurant.photograph;
+  }
+  
+  let origin = `/img/${num}.jpg`;
+  let small = `${num}-400.jpg`;
   console.log("small in rest", small);
   const source1 = document.createElement('source');
   source1.media = '(min-width: 1481px)';

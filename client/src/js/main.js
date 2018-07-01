@@ -156,15 +156,22 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
  * Create restaurant HTML.
  */
 createRestaurantHTML = (restaurant) => {
+  //console.log('main test', restaurant);
   const li = document.createElement('li');
   /**
    * Picture element for responsive images.
    */
 
   const picture = document.createElement('picture');
-  let origin = DBHelper.imageUrlForRestaurant(restaurant);
-  let imageName = origin.replace('.jpg', '');
-  let small = `${imageName}-400.jpg`;
+  let num;
+  if(!restaurant.photgraph) {
+    num = restaurant.id;
+  } else {
+    num = restaurant.photograph;
+  }
+  
+  let origin = `/img/${num}.jpg`;
+  let small = `${num}-400.jpg`;
   const source1 = document.createElement('source');
   source1.media = '(min-width: 1481px)';
   source1.srcset = origin;
