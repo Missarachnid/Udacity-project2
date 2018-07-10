@@ -1,6 +1,8 @@
 /**
  * Common database helper functions.
  */
+import idb from 'idb';
+let dbPromise;
 class DBHelper {
 
   /**
@@ -22,8 +24,9 @@ class DBHelper {
       callback(null, res);
     })
     .catch((err) => {
-      const error = (`Request failed. Returned status of ${data.status}`);
-      callback(error, null);
+      //const error = (`Request failed. Returned status of ${data.status}`);
+      //data was causing problems after browserify/babelify
+      callback(err, null);
     });
 
   }
@@ -175,3 +178,5 @@ class DBHelper {
   } */
 
 }
+
+module.exports = DBHelper;
