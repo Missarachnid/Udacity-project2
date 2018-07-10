@@ -171,7 +171,7 @@ createRestaurantHTML = (restaurant) => {
   }
   
   let origin = `/img/${num}.jpg`;
-  let small = `${num}-400.jpg`;
+  let small = `/img/${num}-400.jpg`;
   const source1 = document.createElement('source');
   source1.media = '(min-width: 1481px)';
   source1.srcset = origin;
