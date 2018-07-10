@@ -32,4 +32,16 @@ gulp.task('main-scripts', function() {
   
 });
 
-gulp.task('default', ['main-scripts']);
+gulp.task('restaurant-scripts', function() {
+  browserify(['./src/js/dbhelper.js', './src/js/restaurant_info.js'])
+  .transform(babelify.configure({
+    presets: ['babel-preset-es2015']
+  }))
+  .bundle()
+  .pipe(source('bundle_restaurant.js'))
+  .pipe(buff())
+  .pipe(gulp.dest('./dist/js'))
+  
+});
+
+gulp.task('default', ['main-scripts', 'restaurant-scripts']);
