@@ -1,34 +1,17 @@
-const staticCacheName = 'restaurant-cache-v1';
+const staticCacheName = 'restaurant-cache-v2';
+
+const imageCache = 'restaurant-imgs';
+
+
+let allCaches = [staticCacheName, imageCache];
+
 const toCache = [
   '/',
-  './index.html',
   './restaurant.html',
   './css/styles.css',
-  './data/restaurants.json',
-  './js/dbhelper.js',
-  './js/main.js',
-  './js/restaurant_info.js',
-  './img/1.jpg',
-  './img/2.jpg',
-  './img/3.jpg',
-  './img/4.jpg',
-  './img/5.jpg',
-  './img/6.jpg',
-  './img/7.jpg',
-  './img/8.jpg',
-  './img/9.jpg',
-  './img/10.jpg',
-  './img/1-400.jpg',
-  './img/2-400.jpg',
-  './img/3-400.jpg',
-  './img/4-400.jpg',
-  './img/5-400.jpg',
-  './img/6-400.jpg',
-  './img/7-400.jpg',
-  './img/8-400.jpg',
-  './img/9-400.jpg',
-  './img/10-400.jpg'
-
+  './js/bundle_main.js',
+  './js/bundle_restaurant.js',
+  './img/favicon.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -41,7 +24,15 @@ self.addEventListener('install', (event) => {
   );
 });
 
+
 self.addEventListener('fetch', (event) => {
+  var url = new URL(event.request.url);
+
+  if(url.pathname.startsWith('/img/')){
+    event.respondWith(serveImage(event.request));
+    return;
+  }
+
     event.respondWith(
         caches.open(staticCacheName)
         .then((cache)  => {
@@ -58,15 +49,18 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-self.addEventListener('activate', (event) => {
-  let cacheWhiteList = ['restaurant-cache-v1'];
+
+self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(keyList.map((key) => {
-        if (cacheWhiteList.indexOf(key) === -1) {
+    caches.keys().then(function(keyList) {
+      return Promise.all(
+        keyList.filter(function(key) {
+          return key.startsWith('restaurant-') &&
+                 !allCaches.includes(key);
+        }).map(function(key) {
           return caches.delete(key);
-        }
-      }));
+        })
+      );
     })
   );
 });
@@ -76,6 +70,23 @@ self.addEventListener('message', (event) => {
        self.skipWaiting();
     }
 });
+
+//Saves images in seperate cache
+function serveImage(request) {
+
+  return caches.open(imageCache)
+  .then((cache) => {
+    return cache.match(request.url)
+    .then((response) => {
+      if(response) return response;
+      return fetch(request.url)
+      .then((networkResponse) => {
+        cache.put(request.url, networkResponse.clone());
+        return networkResponse;
+      }).catch((err) => console.log('sw serve image error', err));
+    });
+  });
+}
 
 /* I was greatly helped with this by the old files from the "Introducing the Service Worker" lessons from earlier in the course and 
 this page from Google https://developers.google.com/web/fundamentals/primers/service-workers/*/

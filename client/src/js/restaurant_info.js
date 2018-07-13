@@ -36,23 +36,6 @@ var initMap = () => {
     }
   });
 }  
- 
-/* window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
-      fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
-    }
-  });
-} */
-
 
 /**
  * Get current restaurant from page URL.
@@ -92,7 +75,6 @@ var fillRestaurantHTML = (restaurant = self.restaurant) => {
   /**
    * Add source elements to picture element and update the src of the image, so it will display correctly
    */
-
   const picture = document.getElementById('restaurant-pic');
 
   let num;
@@ -103,8 +85,8 @@ var fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
   
   let origin = `/img/${num}.jpg`;
-  let small = `/img/{num}-400.jpg`;
-  console.log("small in rest", small);
+  let small = `/img/${num}-400.jpg`;
+
   const source1 = document.createElement('source');
   source1.media = '(min-width: 1481px)';
   source1.srcset = origin;
@@ -240,8 +222,9 @@ var getParameterByName = (name, url) => {
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+
 /**
- * Function for keystroke eventlistener on View Details button. Makes sure spacebar clicks button.
+ * Ensures that space key will work for enter on keyboard navigation through site
  */
 var ensureClick = (e) => {
   e.preventDefault();

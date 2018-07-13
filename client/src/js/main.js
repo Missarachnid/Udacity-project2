@@ -2,23 +2,78 @@ import DBHelper from './dbhelper.js';
 
 let restaurants,
   neighborhoods,
-  cuisines
-var newMap
-var markers = []
+  cuisines;
+var newMap;
+var numSteps= 20.0;
+var prevRatio = 0.0;
+var markers = [];
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
+  //console.log('dom loaded in main, variables ', restaurants, neighborhoods, cuisines);
   initMap();
   fetchNeighborhoods();
   fetchCuisines();
+  setListeners();
+  setIntersectionObservers();
 });
+
+/**
+ * Set Intersection Observers
+ */
+
+ var setIntersectionObservers = () => {
+   var options = {
+    root: document.querySelector('#maincontent'),
+    rootMargin: '0px',
+    threshold: buildThresholdList()
+  }
+  var observer = new IntersectionObserver(handleIntersect, options);
+ }
+
+ var buildThresholdList = () => {
+   var thresholds = [];
+   for(var i = 1.0; i <= numSteps; i++) {
+     var ratio = i/numSteps;
+     thresholds.push(ratio);
+   }
+    thresholds.push(0);
+    return thresholds;
+ }
+
+ var handleIntersect = (entries, observer) => {
+  entries.forEach(function(entry) {
+    if (entry.intersectionRatio > prevRatio) {
+      entry.target.classList.remove('hidden');
+      entry.target.classList.add('show')
+    } else {
+      entry.target.classList.add('hidden');
+      entry.target.classList.remove('show');
+    }
+
+    prevRatio = entry.intersectionRatio;
+  });
+}
+/**
+ * Set Event Listeners for neighborhod and cuisine change since calling function was not working after bundling of scripts
+ */
+var setListeners = () => {
+  document.getElementById('neighborhoods-select').addEventListener('change', function() {
+    updateRestaurants();
+  });
+
+  document.getElementById('cuisines-select').addEventListener('change', function() {
+   updateRestaurants();
+  });
+ }
 
 /**
  * Fetch all neighborhoods and set their HTML.
  */
 var fetchNeighborhoods = () => {
+  //console.log('main fetchNeighborhoods was called');
   DBHelper.fetchNeighborhoods((error, neighborhoods) => {
     if (error) { // Got an error
       console.error(error);
@@ -91,18 +146,6 @@ var initMap = () => {
 
   updateRestaurants();
 }
-/* window.initMap = () => {
-  let loc = {
-    lat: 40.722216,
-    lng: -73.987501
-  };
-  self.map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: loc,
-    scrollwheel: false
-  });
-  updateRestaurants();
-} */
 
 /**
  * Update page and map for current restaurants.
@@ -159,7 +202,6 @@ var fillRestaurantsHTML = (restaurants = self.restaurants) => {
  * Create restaurant HTML.
  */
 var createRestaurantHTML = (restaurant) => {
-  //console.log('main test', restaurant);
   const li = document.createElement('li');
   /**
    * Picture element for responsive images.
@@ -239,17 +281,10 @@ var addMarkersToMap = (restaurants = self.restaurants) => {
   });
 
 } 
-/* addMarkersToMap = (restaurants = self.restaurants) => {
-  restaurants.forEach(restaurant => {
-    // Add marker to the map
-    const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
-    google.maps.event.addListener(marker, 'click', () => {
-      window.location.href = marker.url
-    });
-    self.markers.push(marker);
-  });
-} */
 
+/**
+ * Ensures that space key will work for enter on keyboard navigation through site
+ */
 var ensureClick = (e) => {
   e.preventDefault();
   let code = event.charCode || event.keyCode;

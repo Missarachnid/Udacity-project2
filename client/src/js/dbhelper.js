@@ -1,9 +1,34 @@
 /**
  * Common database helper functions.
  */
+
 import idb from 'idb';
 let dbPromise;
 class DBHelper {
+
+  /**
+   * open db Database
+   */
+  //if browser doesn't support sw, don't open db
+  static openDB() {
+    return idb.open('restaurants', 1, (upgradeDb) => {
+      upgradeDb.createObjectStore('restaurants', {keyPath: 'id'})
+    });
+  }
+
+  /**
+   * Get Data From idb 
+   */
+   static getData(){
+     dbPromise = DBHelper.openDB();
+     return dbPromise
+     .then((db) => {
+       if(!db) return; //initial load
+       let tx = db.transaction('restaurants');
+       let store = tx.objectStore('restaurants');
+       return store.getAll();
+     })
+   }
 
   /**
    * Database URL.
@@ -18,19 +43,53 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    fetch(DBHelper.DATABASE_URL)
-    .then((data) => data.json())
-    .then((res) => {
-      callback(null, res);
-    })
-    .catch((err) => {
+    DBHelper.getData()
+    .then((data) => {
+      //If it exists in idb, return it
+      if(data.length > 0) {
+        return callback(null, data);
+      }
+      //if there is not data fetch from the server
+      fetch(DBHelper.DATABASE_URL ,{credentials:'same-origin'})
+      .then((data) => {
+        return data.json();
+      })
+      .then((res) => {
+        dbPromise.then((db) => {
+          if(!db) return;
+
+          let tx = db.transaction('restaurants', 'readwrite');
+          let store = tx.objectStore('restaurants');
+
+          res.forEach((restaurant) => {
+            store.put(restaurant);
+          });
+
+          //Keep entries less than 26
+          store.openCursor(null, "prev")
+          .then((cursor) => {
+            return cursor.advance(26);
+          })
+          .then(function deleteRest(cursor){
+            if (!cursor) return;
+            cursor.delete();
+            return cursor.continue().then(deleteRest);
+          });
+        });
+        return callback(null, res)
+        })
+      
+      .catch((err) => {
       //const error = (`Request failed. Returned status of ${data.status}`);
       //data was causing problems after browserify/babelify
+      console.log('dbhelper fetch restaurants catch', err);
       callback(err, null);
+      });
     });
+}
+    
 
-  }
-
+  
   /**
    * Fetch a restaurant by its ID.
    */
@@ -73,6 +132,7 @@ class DBHelper {
     // Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
+        console.log("main fetchRest by neigh", error);
         callback(error, null);
       } else {
         // Filter restaurants to have only given neighborhood
@@ -166,16 +226,6 @@ class DBHelper {
       marker.addTo(newMap);
     return marker;
   } 
-  /* static mapMarkerForRestaurant(restaurant, map) {
-    const marker = new google.maps.Marker({
-      position: restaurant.latlng,
-      title: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant),
-      map: map,
-      animation: google.maps.Animation.DROP}
-    );
-    return marker;
-  } */
 
 }
 
