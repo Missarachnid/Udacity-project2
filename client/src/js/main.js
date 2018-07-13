@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 /**
  * Set Intersection Observers
+ * Learned how to do this from:
+ * https://developers.google.com/web/updates/2016/04/intersectionobserver
  */
 
  var setIntersectionObservers = () => {
