@@ -1,4 +1,4 @@
-#Udacity Mobile Web Specialist Project stage 2
+#  Udacity Mobile Web Specialist Project stage 2
 
 ## To run this project:
 *  The server for running this project is located [here](https://github.com/udacity/mws-restaurant-stage-2), follow instructions to start
